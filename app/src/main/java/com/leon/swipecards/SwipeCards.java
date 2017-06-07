@@ -14,10 +14,15 @@ import android.view.ViewGroup;
 
 public class SwipeCards extends ViewGroup {
 
+    private static final String TAG = "SwipeCards";
+
     private int mCenterX;
     private int mCenterY;
 
     private ViewDragHelper mViewDragHelper;
+
+    private static final int MAX_DEGREE = 60;
+    private static final float MAX_ALPHA_RANGE = 0.5f;
 
     private int mCardGap = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
 
@@ -68,6 +73,17 @@ public class SwipeCards extends ViewGroup {
         @Override
         public int clampViewPositionVertical(View child, int top, int dy) {
             return top;
+        }
+
+        @Override
+        public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
+            //计算位置改变后，与原来位置的中心点变化量
+            int diffX = left + changedView.getWidth() / 2 - mCenterX;
+            float ratio = diffX * 1.0f / getWidth();
+            float degree = MAX_DEGREE * ratio;
+            changedView.setRotation(degree);
+            float alpha = 1 - Math.abs(ratio) * MAX_ALPHA_RANGE;
+            changedView.setAlpha(alpha);
         }
     };
 
