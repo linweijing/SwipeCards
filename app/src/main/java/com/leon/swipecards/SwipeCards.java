@@ -91,14 +91,38 @@ public class SwipeCards extends ViewGroup {
         @Override
         public void onViewReleased(final View releasedChild, float xvel, float yvel) {
             final int left = releasedChild.getLeft();
-            if (left > getWidth() * 0.5f) {
-                int finalLeft = getWidth() + (getHeight() - getWidth()) / 2;
-                int finalTop = releasedChild.getTop();
-                mViewDragHelper.smoothSlideViewTo(releasedChild, finalLeft, finalTop);
-                invalidate();
+            final int right = releasedChild.getRight();
+            if (left > mCenterX) {
+                animateToRight(releasedChild);
+            } else if (right < mCenterX) {
+                animateToLeft(releasedChild);
+            } else {
+                animateToCenter(releasedChild);
             }
         }
     };
+
+    private void animateToCenter(View releasedChild) {
+        int finalLeft = mCenterX - releasedChild.getWidth() / 2;
+        int indexOfChild = indexOfChild(releasedChild);
+        int finalTop = mCenterY - releasedChild.getHeight() / 2 + mCardGap * (getChildCount() - indexOfChild);
+        mViewDragHelper.smoothSlideViewTo(releasedChild, finalLeft, finalTop);
+        invalidate();
+    }
+
+    private void animateToRight(View releasedChild) {
+        int finalLeft = getWidth() + releasedChild.getHeight();
+        int finalTop = releasedChild.getTop();
+        mViewDragHelper.smoothSlideViewTo(releasedChild, finalLeft, finalTop);
+        invalidate();
+    }
+
+    private void animateToLeft(View releasedChild) {
+        int finalLeft = -getWidth();
+        int finalTop = 0;
+        mViewDragHelper.smoothSlideViewTo(releasedChild, finalLeft, finalTop);
+        invalidate();
+    }
 
     @Override
     public void computeScroll() {
