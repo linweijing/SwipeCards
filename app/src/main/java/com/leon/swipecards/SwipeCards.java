@@ -3,6 +3,7 @@ package com.leon.swipecards;
 import android.content.Context;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -77,6 +78,7 @@ public class SwipeCards extends ViewGroup {
 
         @Override
         public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
+            Log.d(TAG, "onViewPositionChanged: " + left);
             //计算位置改变后，与原来位置的中心点变化量
             int diffX = left + changedView.getWidth() / 2 - mCenterX;
             float ratio = diffX * 1.0f / getWidth();
@@ -85,7 +87,25 @@ public class SwipeCards extends ViewGroup {
             float alpha = 1 - Math.abs(ratio) * MAX_ALPHA_RANGE;
             changedView.setAlpha(alpha);
         }
+
+        @Override
+        public void onViewReleased(final View releasedChild, float xvel, float yvel) {
+            final int left = releasedChild.getLeft();
+            if (left > getWidth() * 0.5f) {
+                int finalLeft = getWidth() + (getHeight() - getWidth()) / 2;
+                int finalTop = releasedChild.getTop();
+                mViewDragHelper.smoothSlideViewTo(releasedChild, finalLeft, finalTop);
+                invalidate();
+            }
+        }
     };
+
+    @Override
+    public void computeScroll() {
+        if (mViewDragHelper.continueSettling(false)) {
+            invalidate();
+        }
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
